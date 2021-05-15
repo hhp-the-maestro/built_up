@@ -29,7 +29,7 @@ def main():
  
  hot_reloader.re_loader(filename)
  
- ### *The program seems to run only on linux, As for sure the program was set not to run into errors,  you don't need to get worried about it and running the reloader is simple and if help required there is a help function inside the hot_reloader which is same as the above provided instruction for quick reference*
+ ### *The program seems to run only on linux, As for sure the program was set not to run into errors,  you don't need to get worried about it and running the reloader is simple and if help required there is a helper function inside the hot_reloader which is same as the above provided instruction for quick reference*
  
- hot_reloader.help()
+ hot_reloader.helper()
   

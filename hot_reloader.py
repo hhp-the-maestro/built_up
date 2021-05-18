@@ -16,10 +16,6 @@ except ModuleNotFoundError:
 # global variables
 
 i, pid = 0, None
-shelfy = shelve.open('file_track#918374')
-shelfy['first_run'] = 1
-shelfy['is_error'] = 0
-shelfy.close()
 
 # functions
 
@@ -87,6 +83,7 @@ def run():
     file = open('log#918374.txt', 'w')
     file.close()
     # print(content)
+    time.sleep(1)
     if 'Error' in content:
         if shelf['first_run'] == 1:
             print('\033[91m' + 'Error: while Initializing file\nhint: hot_reloader.helper()')
@@ -125,14 +122,14 @@ def save_file():
 # get the active keyboard focus using xdotool 'sudo apt-get install xdotool'
 
 
-def get_active_screen():
+def get_active_screen(file_extension):
     # '2>&1' -> send both output and error to the same file
     os.system("xdotool getwindowfocus getwindowname > log#918374.txt 2>&1")
     screen = 0
     file = open('log#918374.txt', 'r')
     name = file.readline()
     file.close()
-    if '.py' in name:
+    if file_extension in name:
         screen = 1
     elif 'not found' in name:
         print('\033[91m' + "'xdotool': not found\n hint: 'sudo apt-get install xdotool")
@@ -175,13 +172,18 @@ def get_pid():
 # packing all the above functions in order to make the hot re_loader work
 
 
-def re_loader(filename):
+def re_loader(filename, file_extension='.py'):
+    shelfy = shelve.open('file_track#918374')
+    shelfy['first_run'] = 1
+    shelfy['is_error'] = 0
+    shelfy.close()
+    screen = 1
     while True:
         try:
             global i, pid
             lines = read_original_file(filename)
             write_dupe_file(lines)
-            screen = get_active_screen()
+            # screen = get_active_screen(filename)
             if screen == 1:
                 save_file()
                 run()
@@ -196,11 +198,10 @@ def re_loader(filename):
                 break
             shelf['first_run'] = 0
             shelf.close()
+            screen = get_active_screen(file_extension)
         except KeyboardInterrupt:
             break
     try:
-        os.system("pkill -f 'python3 dupe#918374.py' 2> log#918374.txt")
-        os.system("pkill -f 'python3 no_error_file#918374.py' 2> log#918374.txt")
         os.unlink('dupe#918374.py')
         os.unlink('dupe2#918374.py')
         os.unlink('debug#918374.py')
@@ -209,6 +210,8 @@ def re_loader(filename):
         os.unlink('file_track#918374.dir')
         os.unlink('file_track#918374.bak')
         os.unlink('file_track#918374.dat')
+        os.system("pkill -f 'python3 dupe#918374.py' 2> log#918374.txt")
+        os.system("pkill -f 'python3 no_error_file#918374.py' 2> log#918374.txt")
         sys.exit()
     except:
         sys.exit()
@@ -218,16 +221,21 @@ def re_loader(filename):
 
 def helper():
     print('\033[92m' + '\t\t\t\t\t\t\thot_reloader\n\t\t\t\t\t\t\t\t\t - by hhp (Hari Hara Prasad)')
-    print('\033[94m' + f"The hot reloader was made to get a nearly similar feel of working in google's flutter dev\n"
-                       f"hot reloader, the reloader saves your file, reloads it and neglects any errors in\n"
-                       f"your program by tracking the version of your file with no errors. It is very appealing while\n"
-                       f"doing app developement with pyqt, kivy, tkinter, etc. where you don't need to run your \n"
-                       f"program each and every time for minimal testing of your developement.")
+    print('\033[94m' + f"The hot reloader was made to get some interactive experience to pythonists where the program\n"
+                       f"updates and gives ouput, while we code it along side the execution of the reloader.\n"
+                       f"The reloader saves your file, reloads it and neglects any errors in your program\n"
+                       f"by tracking the version of  your file with no errors. It is very appealing while doing \n"
+                       f"app developement with pyqt, kivy, tkinter, etc. where you don't need to run your program\n"
+                       f"each and every time for minimal testing of your developement.")
 
     print('\033[94m' + "\nthe program was set, to get, run only on linux and the program must be imported and run\n"
                        "from a seperate file and that's it you can do your developement while running your program\n"
-                       "along side with this hot_reloader. while doing app development your keyboard focus should\n"
-                       "in your IDE or the .py file to run the reloader or else it pauses updating")
+                       "along side with this hot_reloader. The keyboard focus should be set to your IDE or \n"
+                       "the .py file to run the reloader or else the reloader pauses updating, you can set the focus\n"
+                       "to any particular fileas by setting the file_extension(a string of a filename), the default \n"
+                       "file extension is '.py' so that it would save any python file and run the reloader but your \n"
+                       "your keyboard focus should be on the right file for which you run the reloader so that it \n"
+                       "would get updated.")
 
     print('USAGE: __________________________________________________________________________')
 
@@ -237,13 +245,16 @@ def helper():
     print('\033[94m' + "\nyou should always have a function main through which your entire program runs and you \n"
                        "should not call the function main() anywhere in your program")
     print('\033[96m' + '\ndef main():\n\trun = X()')
-    print('\033[94m' + 'you should provide a file which can  run without any errors. after successfully initializingr\n'
-                       'the hot reloader , you can write codes on your file where errors do not disturb the reloader')
-    print('\033[94m' + 'Now create a new file for example sample.py and,')
+    print('\033[94m' + 'you should provide a file which can successfully run for the initially. After successful \n'
+                       'initialization,  you can modify the codes build up the program where errors do not disturb\n'
+                       'the reloader.')
+    print('\033[94m' + 'Now create a new file for example sample.py,')
     print('\033[95m' + '\n\t\tsample.py\t\t\n')
-    print('\033[96m' + "\nimport hot_reloader\nhot_reloader.re_loader('script.py')")
-    print('\033[94m' + "\n\nThe program seems to run only on linux, As for sure the program is set not to run into\n"
+    print('\033[96m' + "\nimport hot_reloader\nhot_reloader.re_loader(filename='script.py', file_extension='.py')")
+    print("\t\t\t\t\t\t\t\t\t\t\t\tor")
+    print('\033[96m' + "\nhot_reloader.re_loader(filename='script.py', file_extension='script.py')")
+    print('\033[94m' + "\n\nThe program seems to run only on linux. For sure the program is set not to run into\n"
                        "errors, even running errors won't disturb the reloader it updates as soon you debug the error\n"
-                       "you don't need to get worried about it coz running the reloader is simple")
+                       "you don't need to get worried about it coz running the reloader is simple.")
 
 # ____________________________end of program____________________________________________________________________________

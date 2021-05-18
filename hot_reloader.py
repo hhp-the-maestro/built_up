@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 # global variables
 
 i, pid = 0, None
-shelfy = shelve.open('file_track')
+shelfy = shelve.open('file_track#918374')
 shelfy['first_run'] = 1
 shelfy['is_error'] = 0
 shelfy.close()
@@ -33,48 +33,60 @@ def read_original_file(filename):
     # get each line of the file in a list
     lines = py_file.readlines()
 
-    shelf = shelve.open('file_track')
+    shelf = shelve.open('file_track#918374')
     shelf['last_save'] = lines
     shelf['no_err_run'] = 0
     shelf.close()
 
     return lines
 
-# write the list of strings from the read_file to the dupe_file and debug_file
+# write the list of strings from the read_file to the dupe_file and create a debug_file
 
 
 def write_dupe_file(get_lines):
     lines = get_lines
 
     # create a dupe file
-    dupe_file = open('dupe.py', 'w')
-    dupe_file.write('\nimport multiprocessing\n')
+    dupe_file = open('dupe#918374.py', 'w')
 
     ''' write the entire original python file into 
         the dupe file with try and except to avoid errors'''
 
     dupe_file.writelines(lines)
     dupe_file.write('\nmain()')
+    dupe_file.close()
 
-    debug_file = open('debug.py', 'w')
-    debug_file.write('\nimport multiprocessing, sys\n')
-    debug_file.writelines(lines)
-    insert_line = "\np = multiprocessing.Process(target=main, name='main')"
-    debug_file.write(insert_line)
-    debug_file.write("\np.start()\np.terminate()")
+    dupe_file2 = open('dupe2#918374.py', 'w')
+    dupe_file2.writelines(lines)
+    dupe_file2.write("\nmain()")
+    dupe_file2.close()
+
+    debug_file = open('debug#918374.py', 'w')
+    debug_file.write('\nimport multiprocessing\nimport os, time\n')
+    insert_line1 = "\ndef __kill_debug_now__():\n"
+    insert_line2 = '''\ttime.sleep(1)\n\tos.system("pkill -f 'python3 dupe2#918374.py'")'''
+    insert_line3 = "\np = multiprocessing.Process(target=__kill_debug_now__, name='kill_debug')"
+    insert_line4 = "\np.start()\nos.system('python3 dupe2#918374.py >> log#918374.txt 2>&1')\np.join()\np.close()"
+    debug_file.write(insert_line1)
+    debug_file.write(insert_line2)
+    debug_file.write(insert_line3)
+    debug_file.write(insert_line4)
+    debug_file.write("\n\n")
+    debug_file.close()
 
 # runs debug file checks for error decision making running decisioned file
 
 
 def run():
-    shelf = shelve.open('file_track')
-    os.system('python3 debug.py > log.txt 2>&1')
-    # os.system("pkill -f 'python3 dupe.py'")
-    file = open('log.txt', 'r')
+    shelf = shelve.open('file_track#918374')
+    os.system('python3 debug#918374.py')
+    # os.system("pkill -f 'python3 dupe#918374.py'")
+    file = open('log#918374.txt', 'r')
     content = file.read()
     file.close()
-    file = open('log.txt', 'w')
+    file = open('log#918374.txt', 'w')
     file.close()
+    # print(content)
     if 'Error' in content:
         if shelf['first_run'] == 1:
             print('\033[91m' + 'Error: while Initializing file\nhint: hot_reloader.helper()')
@@ -84,17 +96,18 @@ def run():
         if shelf['is_error'] == 0:
             print('\033[91m' + "There is an 'Error'...file tracking....")
             shelf['is_error'] = 1
-        os.system('python3 no_error_file.py &')
+
+        os.system('python3 no_error_file#918374.py &')
         shelf['no_err_run'] = 1
         shelf.close()
     else:
         if shelf['is_error'] == 1:
             print('\033[92m' + "'Error'..'Debugged'")
             shelf['is_error'] = 0
-        os.system('python3 dupe.py &')
+        os.system('python3 dupe#918374.py &')
         no_error = shelf['last_save']
         shelf.close()
-        no_error_file = open('no_error_file.py', 'w')
+        no_error_file = open('no_error_file#918374.py', 'w')
         no_error_file.writelines(no_error)
         no_error_file.write('\nmain()')
         no_error_file.close()
@@ -114,9 +127,9 @@ def save_file():
 
 def get_active_screen():
     # '2>&1' -> send both output and error to the same file
-    os.system("xdotool getwindowfocus getwindowname > log.txt 2>&1")
+    os.system("xdotool getwindowfocus getwindowname > log#918374.txt 2>&1")
     screen = 0
-    file = open('log.txt', 'r')
+    file = open('log#918374.txt', 'r')
     name = file.readline()
     file.close()
     if '.py' in name:
@@ -124,7 +137,7 @@ def get_active_screen():
     elif 'not found' in name:
         print('\033[91m' + "'xdotool': not found\n hint: 'sudo apt-get install xdotool")
         sys.exit()
-    file = open('log.txt', 'w')
+    file = open('log#918374.txt', 'w')
     file.close()
     return screen
 
@@ -132,8 +145,8 @@ def get_active_screen():
 
 
 def get_kill(pid_):
-    os.system(f"kill {pid_} >> log.txt 2>&1")
-    file = open('log.txt', 'w')
+    os.system(f"kill {pid_} >> log#918374.txt 2>&1")
+    file = open('log#918374.txt', 'w')
     file.close()
 
 # get the process id for the running file 'filename'
@@ -141,21 +154,21 @@ def get_kill(pid_):
 
 def get_pid():
     global pid
-    shelf = shelve.open('file_track')
+    shelf = shelve.open('file_track#918374')
     was_error_file_run = shelf['no_err_run']
 
     if was_error_file_run == 1:
-        os.system("pgrep -f 'python3 no_error_file.py' > log.txt 2>&1")
+        os.system("pgrep -f 'python3 no_error_file#918374.py' > log#918374.txt 2>&1")
         shelf['no_err_run'] = 0
         shelf.close()
     else:
-        os.system("pgrep -f 'python3 dupe.py'> log.txt 2>&1")
+        os.system("pgrep -f 'python3 dupe#918374.py'> log#918374.txt 2>&1")
 
         shelf.close()
-    file = open('log.txt', 'r')
+    file = open('log#918374.txt', 'r')
     pid = file.readline()
     file.close()
-    file = open('log.txt', 'w')
+    file = open('log#918374.txt', 'w')
     file.close()
     return pid
 
@@ -172,22 +185,33 @@ def re_loader(filename):
             if screen == 1:
                 save_file()
                 run()
-                time.sleep(0.7)
+                time.sleep(0.75)
                 if i == 1:
                     get_kill(int(pid))
                 pid = get_pid()
                 time.sleep(2.5)
             i = 1
-            shelf = shelve.open('file_track')
+            shelf = shelve.open('file_track#918374')
             if shelf['first_run'] == -1:
                 break
             shelf['first_run'] = 0
             shelf.close()
         except KeyboardInterrupt:
-            os.system("pkill -f 'python3 dupe.py' 2> log.txt")
-            os.system("pkill -f 'python3 no_error_file.py' 2> log.txt")
             break
-    sys.exit()
+    try:
+        os.system("pkill -f 'python3 dupe#918374.py' 2> log#918374.txt")
+        os.system("pkill -f 'python3 no_error_file#918374.py' 2> log#918374.txt")
+        os.unlink('dupe#918374.py')
+        os.unlink('dupe2#918374.py')
+        os.unlink('debug#918374.py')
+        os.unlink('no_error_file#918374.py')
+        os.unlink('log#918374.txt')
+        os.unlink('file_track#918374.dir')
+        os.unlink('file_track#918374.bak')
+        os.unlink('file_track#918374.dat')
+        sys.exit()
+    except:
+        sys.exit()
 
 # the helper function which contains information how to use the hot_reloader
 
